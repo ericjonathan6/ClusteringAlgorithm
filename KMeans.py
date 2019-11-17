@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import KMeans
 from scipy.stats import mode
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score
 
 
@@ -41,24 +42,28 @@ def main() :
 
     le = LabelEncoder()
     iris_df['label'] = le.fit_transform(iris_df['label'])
-
-    C = initialize_centroids(iris_df.drop(['label'], axis=1).values, 3)
-
-    clustered = kmeans(iris_df.drop(['label'], axis=1).values, 3, 300)
-    clustered[0]
-
-    kmeans_model = KMeans(3, random_state=1)
-    kmeans_model.fit(iris_df.drop(['label'], axis=1))
-    kmeans_model.labels_
-    kmeans_model.cluster_centers_
-
+    X = iris_df.drop(['label'], axis=1).values
     y = iris_df['label'].values
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
-    print("accuracy Kmeans from model sklearn : ",end="")
-    print(calculate_accuracy(y, kmeans_model.labels_))
+    clustered = kmeans(X_train, 3, 300)
+    predict_scratch = assign_cluster(X_test, clustered[1])
 
-    print("accuracy Kmeans : ", end="")
-    print(calculate_accuracy(y, clustered[0]))
+    kmeans_model = KMeans(3, random_state=1, max_iter=300)
+    kmeans_model.fit(X_train)
+    predict_sklearn = kmeans_model.predict(X_test)
+
+    print("Accuracy on Training Set Kmeans from Sklearn Model : ",end="")
+    print(calculate_accuracy(y_train, kmeans_model.labels_))
+
+    print("Accuracy on Training Set Kmeans from Our Model: ", end="")
+    print(calculate_accuracy(y_train, clustered[0]))
+
+    print("Accuracy on Test Set Kmeans from Sklearn Model : ",end="")
+    print(calculate_accuracy(y_test, predict_sklearn))
+
+    print("Accuracy on Test Set Kmeans from our Model: ", end="")
+    print(calculate_accuracy(y_test, predict_scratch))
 
 
 
