@@ -64,7 +64,7 @@ def average_link(features, clusters, p_a):
 
     return new_distance
 
-def average_complete_link() :
+def average_complete_link(features, clusters, p_a) :
     new_distance = []
     feature_list_a = create_feature_list(features, clusters[p_a])
 
@@ -126,6 +126,8 @@ def update_adj_matrix(features, p_1, p_2, cluster, cluster_matrix, linkage) :
         new_distance = complete_link(features, cluster, p_2)
     elif (linkage == 3):
         new_distance = average_link(features, cluster, p_2)
+    elif (linkage == 4) :
+        new_distance = average_complete_link(features, cluster, p_2)
         
     cluster_matrix.insert(p_2,new_distance)
     for i in range(len(cluster_matrix)) :
@@ -178,11 +180,11 @@ def main() :
     le = LabelEncoder()
     iris_df['label'] = le.fit_transform(iris_df['label'])
 
-    agg = AgglomerativeClustering(3)
+    agg = AgglomerativeClustering(3,linkage="single")
     features = iris_df.drop(['label'], axis=1)
     agg.fit(features)
 
-    linkage = 2
+    linkage = 1
     n_cluster = 3
     cluster = agglomerative(features, n_cluster, linkage)
 
@@ -190,12 +192,47 @@ def main() :
 
     y = iris_df['label'].values
 
-    print("accuracy Agglomerative from model sklearn : ",end="")
+    print("accuracy Agglomerative with Single Link from model sklearn : ",end="")
     print(calculate_accuracy(y, agg.labels_))
 
-    print("accuracy Agglomerative : ",end="")
-    print(calculate_accuracy(y, predicted_label))
+    print("accuracy Agglomerative with Single Link : ",end="")
+    print(calculate_accuracy(y, predicted_label),end="\n\n")
+    
+    agg = AgglomerativeClustering(3,linkage="complete")
+    agg.fit(features)
 
+    print("accuracy Agglomerative with Complete Link from model sklearn : ",end="")
+    print(calculate_accuracy(y, agg.labels_))
+
+    linkage = 2
+    cluster = agglomerative(features, n_cluster, linkage)
+
+    predicted_label = set_label(cluster, features)
+
+    print("accuracy Agglomerative with Complete Link : ",end="")
+    print(calculate_accuracy(y, predicted_label),end="\n\n")
+
+    agg = AgglomerativeClustering(3,linkage="average")
+    agg.fit(features)
+
+    print("accuracy Agglomerative with Average Link from model sklearn : ",end="")
+    print(calculate_accuracy(y, agg.labels_))
+
+    linkage = 3
+    cluster = agglomerative(features, n_cluster, linkage)
+
+    predicted_label = set_label(cluster, features)
+
+    print("accuracy Agglomerative with Average Link : ",end="")
+    print(calculate_accuracy(y, predicted_label),end="\n\n")
+
+    linkage = 4
+    cluster = agglomerative(features, n_cluster, linkage)
+
+    predicted_label = set_label(cluster, features)
+
+    print("accuracy Agglomerative with Average Complete Link : ",end="")
+    print(calculate_accuracy(y, predicted_label))
 
 if __name__ == "__main__":
     main()
